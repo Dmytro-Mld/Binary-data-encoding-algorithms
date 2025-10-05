@@ -19,18 +19,25 @@ def WriteBitSequence(file, bitflow, length):
 
 
 
-def ReadBitSequence(file, bitflow, length):
-    pass
+def ReadBitSequence(file, length):
+    result_bits = ""
+    with open(file, "rb") as f:
+        data = f.read()
+
+    for byte in data:
+        chunk = format(byte, "08b")
+        chunk = chunk[::-1]
+        result_bits += chunk
+
+    return result_bits[:length]
+
 
 
 def main():
     length = 16 #int(input("Enter the length of your input:"))
     file = "Data.bin" #input("Enter your file name:")
-    wrt = WriteBitSequence(file, bitflow, length)
-    with open(file, "rb") as f:
-        content = f.read()
-    print("Check file content:", content)
-
+    #WriteBitSequence(file, bitflow, length)
+    print(ReadBitSequence(file, length))
 
 
 if __name__ == "__main__":
