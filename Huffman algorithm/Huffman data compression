@@ -1,3 +1,16 @@
+class Node:
+    def __init__(self, weight, value=None, left=None, right=None):
+        self.weight = weight
+        self.value = value
+        self.left = left
+        self.right = right
+
+    def is_leaf(self):
+        return self.value is not None
+    
+    
+
+
 def huff():
     with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\np.exe", "rb") as f:
         data = f.read()
