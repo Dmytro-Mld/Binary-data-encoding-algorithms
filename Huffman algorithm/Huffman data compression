@@ -8,7 +8,40 @@ class Node:
     def is_leaf(self):
         return self.value is not None
     
+def build_huffman_tree(freq):
+    nodes = []
+
+    for byte, count in freq.items():
+        nodes.append(Node(weight=count, value=byte))
+
+    while len(nodes) > 1:
+        nodes.sort(key=lambda n: n.weight)
+
+        left = nodes.pop(0)
+        right = nodes.pop(0)
+
+        parent = Node(
+            weight=left.weight + right.weight,
+            left=left,
+            right=right
+        )
+
+        nodes.append(parent)
+
+    return nodes[0]  # корінь дерева
     
+def generate_codes(node, prefix="", codebook=None):
+    if codebook is None:
+        codebook = {}
+
+    if node.is_leaf():
+        codebook[node.value] = prefix
+        return codebook
+
+    generate_codes(node.left, prefix + "0", codebook)
+    generate_codes(node.right, prefix + "1", codebook)
+
+    return codebook
 
 
 def huff():
@@ -24,6 +57,12 @@ def huff():
 
         freq = dict(sorted(freq.items()))
         print(freq)
+        
+        root = build_huffman_tree(freq)
+        codes = generate_codes(root)
+        
+        for k in list(codes):
+            print(f"byte {k} -> code {codes[k]}")
 
         data_comp = ""
 
