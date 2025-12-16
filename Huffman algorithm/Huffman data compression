@@ -17,18 +17,18 @@ def build_huffman_tree(freq):
     while len(nodes) > 1:
         nodes.sort(key=lambda n: n.weight)
 
-        left = nodes.pop(0)
-        right = nodes.pop(0)
+        left_child = nodes.pop(0)
+        right_child = nodes.pop(0)
 
         parent = Node(
-            weight=left.weight + right.weight,
-            left=left,
-            right=right
+            weight=left_child.weight + right_child.weight,
+            left=left_child,
+            right=right_child
         )
 
         nodes.append(parent)
 
-    return nodes[0]  # корінь дерева
+    return nodes[0]
     
 def generate_codes(node, prefix="", codebook=None):
     if codebook is None:
