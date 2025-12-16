@@ -1,0 +1,22 @@
+def huff():
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\np.exe", "rb") as f:
+        data = f.read()
+        freq = {}
+
+        for b in data:
+            if b in freq:
+                freq[b] += 1
+            else:
+                freq[b] = 1
+
+        freq = dict(sorted(freq.items()))
+        print(freq)
+
+        data_comp = ""
+
+        #creating a tree
+        
+    
+
+if __name__ == "__main__":
+    huff()
