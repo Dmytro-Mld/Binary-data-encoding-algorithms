@@ -62,11 +62,69 @@ def compress_data(data, codes):
         out.append(buffer & 0xFF)
 
     return out
+        
+class BitReader:
+    def __init__(self, file):
+        self.file = file
+        self.buffer = 0
+        self.bits_left = 0
+
+    def read_bit(self):
+        if self.bits_left == 0:
+            byte = self.file.read(1)
+            if not byte:
+                return None
+            self.buffer = byte[0]
+            self.bits_left = 8
+
+        bit = self.buffer & 1
+        self.buffer >>= 1
+        self.bits_left -= 1
+        return bit
+    
+def read_frequency_table(file):
+    freq = {}
+    for byte in range(256):
+        count = int.from_bytes(file.read(4), "little")
+        if count > 0:
+            freq[byte] = count
+    return freq
+
+
+def decompress_file(input_path, output_path):
+    with open(input_path, "rb") as f:
+        freq = read_frequency_table(f)
+
+        root = build_huffman_tree(freq)
+
+        total_symbols = sum(freq.values())
+
+        reader = BitReader(f)
+        out = bytearray()
+
+        node = root
+
+        while len(out) < total_symbols:
+            bit = reader.read_bit()
+            if bit is None:
+                break
+
+            if bit == 0:
+                node = node.left
+            else:
+                node = node.right
+
+            if node.is_leaf():
+                out.append(node.value)
+                node = root
+
+    with open(output_path, "wb") as out_file:
+        out_file.write(out)
     
 
 
 def huff():
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\pg.txt", "rb") as f:
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\whois64.exe", "rb") as f:
         data = f.read()
         freq = {}
 
@@ -80,9 +138,11 @@ def huff():
         
         root = build_huffman_tree(freq)
         codes = generate_codes(root)
+        
             
         for k in list(codes):
-            print(f"byte {k} -> code {codes[k]}")
+            value, length = codes[k]
+            print(f"byte {k} -> code ({bin(value)}, {length})")
 
         data_comp = compress_data(data, codes)
 
@@ -92,6 +152,9 @@ def huff():
             count = freq.get(byte, 0).to_bytes(4, "little")
             ff.write(count)
         ff.write(data_comp)
+        
+        
+    #for decoding use decompress_file() function
         
     
 
