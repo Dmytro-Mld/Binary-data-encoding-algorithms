@@ -45,7 +45,7 @@ def generate_codes(node, prefix="", codebook=None):
 
 
 def huff():
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\np.exe", "rb") as f:
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\np.exe", "rb") as f:
         data = f.read()
         freq = {}
 
@@ -56,17 +56,21 @@ def huff():
                 freq[b] = 1
 
         freq = dict(sorted(freq.items()))
-        print(freq)
-        
-        root = build_huffman_tree(freq)
-        codes = generate_codes(root)
-        
-        for k in list(codes):
-            print(f"byte {k} -> code {codes[k]}")
 
-        data_comp = ""
+        
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\compressed.txt", "wb") as ff:
+        for byte in range(256):
+            count = freq.get(byte)
+            ff.write(count.to_bytes(4, byteorder="little", signed=False))
+            
+        
+    root = build_huffman_tree(freq)
+    codes = generate_codes(root)
+        
+    for k in list(codes):
+        print(f"byte {k} -> code {codes[k]}")
 
-        #creating a tree
+    data_comp = ""
         
     
 
