@@ -43,9 +43,29 @@ def generate_codes(node, prefix="", codebook=None):
 
     return codebook
 
+def compress_data(data, codes):
+    bit_buffer = ""
+    compressed = bytearray()
+
+    for b in data:
+        bit_buffer += codes[b]
+
+        while len(bit_buffer) >= 8:
+            byte = bit_buffer[:8]
+            bit_buffer = bit_buffer[8:]
+            compressed.append(int(byte[::-1], 2)) 
+
+
+    if bit_buffer:
+        bit_buffer = bit_buffer[::-1]
+        bit_buffer = bit_buffer.ljust(8, "0")
+        compressed.append(int(bit_buffer, 2))
+
+    return compressed
+
 
 def huff():
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\np.exe", "rb") as f:
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\whois64.exe", "rb") as f:
         data = f.read()
         freq = {}
 
@@ -56,21 +76,21 @@ def huff():
                 freq[b] = 1
 
         freq = dict(sorted(freq.items()))
+        
+        root = build_huffman_tree(freq)
+        codes = generate_codes(root)
+            
+        for k in list(codes):
+            print(f"byte {k} -> code {codes[k]}")
+
+        data_comp = compress_data(data, codes)
 
         
     with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\compressed.txt", "wb") as ff:
         for byte in range(256):
             count = freq.get(byte)
             ff.write(count.to_bytes(4, byteorder="little", signed=False))
-            
-        
-    root = build_huffman_tree(freq)
-    codes = generate_codes(root)
-        
-    for k in list(codes):
-        print(f"byte {k} -> code {codes[k]}")
-
-    data_comp = ""
+        ff.write(data_comp)
         
     
 
