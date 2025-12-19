@@ -1,3 +1,5 @@
+import os
+
 class BitWriter:
     def __init__(self):
         self.buffer = 0
@@ -142,10 +144,53 @@ def lzw_decompress(input_path, output_path):
 
 
 
+# def lzw_test_folder(input_folder, ext=".txt", code_size=12):
+#     ratios = []
+
+#     files = [
+#         f for f in os.listdir(input_folder)
+#         if f.endswith(ext)
+#     ][:10]
+
+#     for filename in files:
+#         path = os.path.join(input_folder, filename)
+
+#         with open(path, "rb") as f:
+#             data = f.read()
+
+#         if not data:
+#             continue
+
+#         compressed = lzw_compress(data, code_size)
+
+#         original_size = len(data)
+#         compressed_size = 5 + len(compressed) 
+
+#         ratio = compressed_size / original_size
+#         ratios.append(ratio)
+
+#         print(
+#             f"{filename}: "
+#             f"original={original_size} B, "
+#             f"compressed={compressed_size} B, "
+#             f"ratio={ratio:.3f}"
+#         )
+
+#     if ratios:
+#         avg = sum(ratios) / len(ratios)
+#         min_r = min(ratios)
+#         max_r = max(ratios)
+
+#         print("\n=== LZW Compression statistics ===")
+#         print(f"Average ratio: {avg:.3f}")
+#         print(f"Min ratio:     {min_r:.3f}")
+#         print(f"Max ratio:     {max_r:.3f}")
+
+
 
 
 if __name__ == "__main__":
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\Txt files\pg28054.txt", "rb") as f:
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Txt files\pg28054.txt", "rb") as f:
         data = f.read()
 
     compressed = lzw_compress(data, 12)
@@ -155,3 +200,6 @@ if __name__ == "__main__":
         f.write(compressed)
 
     lzw_decompress(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\compressed.txt", "restored.exe")
+    
+    # folder = r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Txt files"
+    # lzw_test_folder(folder, ext=".docx", code_size=12)
