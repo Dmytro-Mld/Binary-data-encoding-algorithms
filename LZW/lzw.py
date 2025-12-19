@@ -37,45 +37,74 @@ class BitReader:
         self.buffer >>= n
         self.bits_left -= n
         return value
+    
+
+def write_header(file, code_size):
+    file.write(b"LZW1")
+    file.write(code_size.to_bytes(1, "little"))
+    
+
+def read_header(file):
+    magic = file.read(4)
+    if magic != b"LZW1":
+        raise ValueError("Not an LZW file")
+
+    code_size = int.from_bytes(file.read(1), "little")
+    return code_size
 
 
-def lzw_compress(data: bytes):
-    MAX_CODE = 4095
-    CODE_WIDTH = 12
+def lzw_compress(data, code_size=12):
+    MAX_DICT_SIZE = 1 << code_size
 
-    voc = {bytes([i]): i for i in range(256)}
+    dictionary = {bytes([i]): i for i in range(256)}
     next_code = 256
 
-    writer = BitWriter()
+    buffer = 0
+    bit_count = 0
+    output = bytearray()
 
     s = b""
 
-    for byte in data:
-        c = bytes([byte])
+    for c in data:
+        c = bytes([c])
         sc = s + c
 
-        if sc in voc:
+        if sc in dictionary:
             s = sc
         else:
-            writer.write(voc[s], CODE_WIDTH)
+            code = dictionary[s]
+            buffer |= code << bit_count
+            bit_count += code_size
 
-            if next_code <= MAX_CODE:
-                voc[sc] = next_code
+            while bit_count >= 8:
+                output.append(buffer & 0xFF)
+                buffer >>= 8
+                bit_count -= 8
+
+            if next_code < MAX_DICT_SIZE:
+                dictionary[sc] = next_code
                 next_code += 1
 
             s = c
 
     if s:
-        writer.write(voc[s], CODE_WIDTH)
+        buffer |= dictionary[s] << bit_count
+        bit_count += code_size
 
-    return writer.flush()
+    while bit_count > 0:
+        output.append(buffer & 0xFF)
+        buffer >>= 8
+        bit_count -= 8
+
+    return output
 
 
 
-def lzw_decompress(input, output, code_size=12):
-    MAX_DICT = 1 << code_size
+def lzw_decompress(input_path, output_path):
+    with open(input_path, "rb") as f:
+        code_size = read_header(f)
+        MAX_DICT_SIZE = 1 << code_size
 
-    with open(input, "rb") as f:
         reader = BitReader(f)
 
         dictionary = {i: bytes([i]) for i in range(256)}
@@ -86,7 +115,7 @@ def lzw_decompress(input, output, code_size=12):
             return
 
         old = dictionary[first_code]
-        output = bytearray(old)
+        result = bytearray(old)
 
         while True:
             code = reader.read_bits(code_size)
@@ -100,16 +129,17 @@ def lzw_decompress(input, output, code_size=12):
             else:
                 raise ValueError("Invalid LZW code")
 
-            output.extend(entry)
+            result.extend(entry)
 
-            if next_code < MAX_DICT:
+            if next_code < MAX_DICT_SIZE:
                 dictionary[next_code] = old + entry[:1]
                 next_code += 1
 
             old = entry
 
-    with open(output, "wb") as out:
-        out.write(output)
+    with open(output_path, "wb") as out:
+        out.write(result)
+
 
 
 
@@ -117,3 +147,6 @@ def lzw_decompress(input, output, code_size=12):
 if __name__ == "__main__":
     with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\Exe files\whois64.exe", "rb") as f:
         data = f.read()
+        
+    res = lzw_compress(data)
+    lzw_decompress(res, "Compressed")
