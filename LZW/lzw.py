@@ -145,8 +145,13 @@ def lzw_decompress(input_path, output_path):
 
 
 if __name__ == "__main__":
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\Exe files\whois64.exe", "rb") as f:
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\Txt files\pg28054.txt", "rb") as f:
         data = f.read()
-        
-    res = lzw_compress(data)
-    lzw_decompress(res, "Compressed")
+
+    compressed = lzw_compress(data, 12)
+
+    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\compressed.txt", "wb") as f:
+        write_header(f, 12)
+        f.write(compressed)
+
+    lzw_decompress(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\LZW\compressed.txt", "restored.exe")
