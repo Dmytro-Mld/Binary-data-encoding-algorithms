@@ -60,7 +60,32 @@ def bwt_transform(data: bytes):
 
     return bytes(bwt), primary_index
 
-    
+def bwt_inverse(bwt: bytes, primary_index: int):
+    n = len(bwt)
+
+    count = [0] * 256
+    for b in bwt:
+        count[b] += 1
+
+    total = 0
+    for i in range(256):
+        count[i], total = total, total + count[i]
+
+    next = [0] * n
+    occ = [0] * 256
+
+    for i in range(n):
+        b = bwt[i]
+        next[count[b] + occ[b]] = i
+        occ[b] += 1
+
+    res = bytearray(n)
+    idx = primary_index
+    for i in range(n - 1, -1, -1):
+        res[i] = bwt[idx]
+        idx = next[idx]
+
+    return bytes(res[:-1])
 
 def bwt():
     matrix(test)
