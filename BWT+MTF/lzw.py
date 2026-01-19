@@ -1,4 +1,5 @@
 import os
+import bwt_mtf
 
 class BitWriter:
     def __init__(self):
@@ -192,6 +193,8 @@ def lzw_decompress(input_path, output_path):
 if __name__ == "__main__":
     with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Txt files\pg28054.txt", "rb") as f:
         data = f.read()
+        
+    data, bwt_index = bwt_mtf.bwt_transform(data)
 
     compressed = lzw_compress(data, 12)
 

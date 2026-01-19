@@ -29,11 +29,6 @@ def build_suffix_array(data: bytes):
     return sa
 
 def bwt_transform(data: bytes):
-    sentinel = b'\x00'
-    if sentinel in data:
-        raise ValueError("Data already contains 0x00 sentinel")
-
-    data = data + sentinel
     n = len(data)
 
     sa = build_suffix_array(data)
@@ -53,14 +48,17 @@ def bwt_transform(data: bytes):
 def bwt_inverse(bwt: bytes, primary_index: int):
     n = len(bwt)
 
+    # 1️⃣ Підрахунок символів
     count = [0] * 256
     for b in bwt:
         count[b] += 1
 
+    # 2️⃣ Prefix sums (C array)
     total = 0
     for i in range(256):
         count[i], total = total, total + count[i]
 
+    # 3️⃣ LF-mapping
     next = [0] * n
     occ = [0] * 256
 
@@ -69,13 +67,15 @@ def bwt_inverse(bwt: bytes, primary_index: int):
         next[count[b] + occ[b]] = i
         occ[b] += 1
 
+    # 4️⃣ Відновлення
     res = bytearray(n)
     idx = primary_index
+
     for i in range(n - 1, -1, -1):
         res[i] = bwt[idx]
         idx = next[idx]
 
-    return bytes(res[:-1])
+    return bytes(res)
 
 # if __name__ == "__main__":
 #     bwt()
