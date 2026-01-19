@@ -164,7 +164,7 @@ def huff(input_folder):
 
     files = [
         f for f in os.listdir(input_folder)
-        if f.endswith(".rtf")
+        if f.endswith(".txt")
     ][:10]
 
     for filename in files:
@@ -222,5 +222,5 @@ def huff(input_folder):
 
 if __name__ == "__main__":
     #huff()
-    huff(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Rtf files")
+    huff(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Txt files")
     

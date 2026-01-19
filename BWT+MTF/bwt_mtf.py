@@ -1,13 +1,3 @@
-test = bytes("abracadabra", "utf-8")
-print(test)
-
-def matrix(input):
-    mtrx = []
-    for i in input:
-        pass
-    
-    
-
 def build_suffix_array(data: bytes):
     n = len(data)
 
@@ -87,8 +77,5 @@ def bwt_inverse(bwt: bytes, primary_index: int):
 
     return bytes(res[:-1])
 
-def bwt():
-    matrix(test)
-
-if __name__ == "__main__":
-    bwt()
+# if __name__ == "__main__":
+#     bwt()
