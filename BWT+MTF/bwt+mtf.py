@@ -37,6 +37,29 @@ def build_suffix_array(data: bytes):
         k <<= 1
 
     return sa
+
+def bwt_transform(data: bytes):
+    sentinel = b'\x00'
+    if sentinel in data:
+        raise ValueError("Data already contains 0x00 sentinel")
+
+    data = data + sentinel
+    n = len(data)
+
+    sa = build_suffix_array(data)
+
+    bwt = bytearray(n)
+    primary_index = 0
+
+    for i, pos in enumerate(sa):
+        if pos == 0:
+            bwt[i] = data[-1]
+            primary_index = i
+        else:
+            bwt[i] = data[pos - 1]
+
+    return bytes(bwt), primary_index
+
     
 
 def bwt():
