@@ -1,4 +1,5 @@
 import os
+import bwt_mtf
 
 class Node:
     def __init__(self, weight, value=None, left=None, right=None):
@@ -174,6 +175,8 @@ def huff(input_folder):
 
         if not data:
             continue
+        
+        data, bwt_index = bwt_mtf.bwt_transform(data)
 
         freq = {}
         for b in data:
@@ -206,6 +209,14 @@ def huff(input_folder):
         print(f"Average ratio: {avg:.3f}")
         print(f"Min ratio:     {min_r:.3f}")
         print(f"Max ratio:     {max_r:.3f}")
+        
+    # with open("out.bin", "wb") as f:
+    #     for byte in range(256):
+    #         f.write(freq.get(byte, 0).to_bytes(4, "little"))
+
+    #     f.write(bwt_index.to_bytes(4, "little"))
+
+    #     f.write(data_comp)
         
     
 
