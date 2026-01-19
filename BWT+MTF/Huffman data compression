@@ -1,0 +1,215 @@
+import os
+
+class Node:
+    def __init__(self, weight, value=None, left=None, right=None):
+        self.weight = weight
+        self.value = value
+        self.left = left
+        self.right = right
+
+    def is_leaf(self):
+        return self.value is not None
+    
+def build_huffman_tree(freq):
+    nodes = []
+
+    for byte, count in freq.items():
+        nodes.append(Node(weight=count, value=byte))
+
+    while len(nodes) > 1:
+        nodes.sort(key=lambda n: n.weight)
+
+        left_child = nodes.pop(0)
+        right_child = nodes.pop(0)
+
+        parent = Node(
+            weight=left_child.weight + right_child.weight,
+            left=left_child,
+            right=right_child
+        )
+
+        nodes.append(parent)
+
+    return nodes[0]
+    
+def generate_codes(node, value=0, length=0, codebook=None):
+    if codebook is None:
+        codebook = {}
+
+    if node.is_leaf():
+        codebook[node.value] = (value, length)
+        return codebook
+
+    generate_codes(node.left, value, length + 1, codebook)
+    generate_codes(node.right, value | (1 << length), length + 1, codebook)
+
+    return codebook
+
+def compress_data(data, codes):
+    buffer = 0
+    bit_count = 0
+    out = bytearray()
+
+    for b in data:
+        value, length = codes[b]
+        buffer |= value << bit_count
+        bit_count += length
+
+        while bit_count >= 8:
+            out.append(buffer & 0xFF)
+            buffer >>= 8
+            bit_count -= 8
+
+    if bit_count > 0:
+        out.append(buffer & 0xFF)
+
+    return out
+        
+class BitReader:
+    def __init__(self, file):
+        self.file = file
+        self.buffer = 0
+        self.bits_left = 0
+
+    def read_bit(self):
+        if self.bits_left == 0:
+            byte = self.file.read(1)
+            if not byte:
+                return None
+            self.buffer = byte[0]
+            self.bits_left = 8
+
+        bit = self.buffer & 1
+        self.buffer >>= 1
+        self.bits_left -= 1
+        return bit
+    
+def read_frequency_table(file):
+    freq = {}
+    for byte in range(256):
+        count = int.from_bytes(file.read(4), "little")
+        if count > 0:
+            freq[byte] = count
+    return freq
+
+
+def decompress_file(input_path, output_path):
+    with open(input_path, "rb") as f:
+        freq = read_frequency_table(f)
+
+        root = build_huffman_tree(freq)
+
+        total_symbols = sum(freq.values())
+
+        reader = BitReader(f)
+        out = bytearray()
+
+        node = root
+
+        while len(out) < total_symbols:
+            bit = reader.read_bit()
+            if bit is None:
+                break
+
+            if bit == 0:
+                node = node.left
+            else:
+                node = node.right
+
+            if node.is_leaf():
+                out.append(node.value)
+                node = root
+
+    with open(output_path, "wb") as out_file:
+        out_file.write(out)
+    
+
+
+# def huff():
+#     with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\whois64.exe", "rb") as f:
+#         data = f.read()
+#         freq = {}
+
+#         for b in data:
+#             if b in freq:
+#                 freq[b] += 1
+#             else:
+#                 freq[b] = 1
+
+#         freq = dict(sorted(freq.items()))
+        
+#         root = build_huffman_tree(freq)
+#         codes = generate_codes(root)
+        
+            
+#         for k in list(codes):
+#             value, length = codes[k]
+#             print(f"byte {k} -> code ({bin(value)}, {length})")
+
+#         data_comp = compress_data(data, codes)
+
+        
+#     with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\compressed.txt", "wb") as ff:
+#         for byte in range(256):
+#             count = freq.get(byte, 0).to_bytes(4, "little")
+#             ff.write(count)
+#         ff.write(data_comp)
+        
+        
+#     #for decoding use decompress_file() function
+
+def huff(input_folder):
+    ratios = []
+
+    files = [
+        f for f in os.listdir(input_folder)
+        if f.endswith(".rtf")
+    ][:10]
+
+    for filename in files:
+        path = os.path.join(input_folder, filename)
+
+        with open(path, "rb") as f:
+            data = f.read()
+
+        if not data:
+            continue
+
+        freq = {}
+        for b in data:
+            freq[b] = freq.get(b, 0) + 1
+
+        root = build_huffman_tree(freq)
+        codes = generate_codes(root)
+
+        data_comp = compress_data(data, codes)
+
+        original_size = len(data)
+        compressed_size = 256 * 4 + len(data_comp)
+
+        ratio = compressed_size / original_size
+        ratios.append(ratio)
+
+        print(
+            f"{filename}: "
+            f"original={original_size} B, "
+            f"compressed={compressed_size} B, "
+            f"ratio={ratio:.3f}"
+        )
+
+    if ratios:
+        avg = sum(ratios) / len(ratios)
+        min_r = min(ratios)
+        max_r = max(ratios)
+
+        print("\n=== Compression statistics ===")
+        print(f"Average ratio: {avg:.3f}")
+        print(f"Min ratio:     {min_r:.3f}")
+        print(f"Max ratio:     {max_r:.3f}")
+        
+    
+
+if __name__ == "__main__":
+    #huff()
+    huff(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Rtf files")
+    
