@@ -1,27 +1,53 @@
+def counting_sort(sa, rank, k, n, max_rank):
+    cnt = [0] * (max_rank + 2)
+    tmp = [0] * n
+
+    for i in sa:
+        idx = rank[i + k] + 1 if i + k < n else 0
+        cnt[idx] += 1
+
+    for i in range(1, len(cnt)):
+        cnt[i] += cnt[i - 1]
+
+    for i in reversed(sa):
+        idx = rank[i + k] + 1 if i + k < n else 0
+        cnt[idx] -= 1
+        tmp[cnt[idx]] = i
+
+    return tmp
+
 def build_suffix_array(data: bytes):
     n = len(data)
 
     sa = list(range(n))
     rank = list(data)
+    tmp_rank = [0] * n
 
     k = 1
-    tmp = [0] * n
+    max_rank = max(rank)
 
     while k < n:
+        # radix sort:
+        sa = counting_sort(sa, rank, k, n, max_rank)
+        sa = counting_sort(sa, rank, 0, n, max_rank)
 
-        sa.sort(key=lambda i: (rank[i], rank[i + k] if i + k < n else -1))
+        tmp_rank[sa[0]] = 0
+        r = 0
 
-        tmp[sa[0]] = 0
         for i in range(1, n):
-            prev = sa[i - 1]
-            curr = sa[i]
-            tmp[curr] = tmp[prev] + (
-                (rank[prev], rank[prev + k] if prev + k < n else -1) <
-                (rank[curr], rank[curr + k] if curr + k < n else -1)
-            )
+            prev, curr = sa[i - 1], sa[i]
+            if (
+                rank[prev] != rank[curr] or
+                (rank[prev + k] if prev + k < n else -1) !=
+                (rank[curr + k] if curr + k < n else -1)
+            ):
+                r += 1
+            tmp_rank[curr] = r
 
-        rank = tmp[:]
-        if max(rank) == n - 1:
+        rank, tmp_rank = tmp_rank, rank
+        max_rank = r
+
+        if max_rank == n - 1:
             break
 
         k <<= 1
