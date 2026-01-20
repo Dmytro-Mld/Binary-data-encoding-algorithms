@@ -74,17 +74,14 @@ def bwt_transform(data: bytes):
 def bwt_inverse(bwt: bytes, primary_index: int):
     n = len(bwt)
 
-    # 1️⃣ Підрахунок символів
     count = [0] * 256
     for b in bwt:
         count[b] += 1
 
-    # 2️⃣ Prefix sums (C array)
     total = 0
     for i in range(256):
         count[i], total = total, total + count[i]
 
-    # 3️⃣ LF-mapping
     next = [0] * n
     occ = [0] * 256
 
@@ -93,7 +90,6 @@ def bwt_inverse(bwt: bytes, primary_index: int):
         next[count[b] + occ[b]] = i
         occ[b] += 1
 
-    # 4️⃣ Відновлення
     res = bytearray(n)
     idx = primary_index
 
@@ -103,5 +99,28 @@ def bwt_inverse(bwt: bytes, primary_index: int):
 
     return bytes(res)
 
-# if __name__ == "__main__":
-#     bwt()
+#################################################################  MTF
+def mtf(data):
+    alphabet = []
+    output = []
+    
+    for i in data:
+        if i in alphabet:
+            pass
+        else:
+            alphabet.append(i)
+        if len(alphabet) >= 255:
+            break
+        
+    for i in data:
+        index = data.index(i)
+        output.append(index)
+        tmp = i
+        for j in range(index-1):
+            data[index-1] = data[index]
+            
+               
+
+if __name__ == "__main__":
+    data = "abracadabra"
+    mtf()
