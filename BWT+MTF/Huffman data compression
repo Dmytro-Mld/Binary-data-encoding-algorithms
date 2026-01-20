@@ -226,10 +226,6 @@ def huff_bwt(input_folder):
 
         blocks, indices = bwt_blockwise(path)
 
-        print("Number of blocks:", len(blocks))
-        print("Block size:", len(blocks[0]))
-        print("File size:", os.path.getsize(path))
-
         original_size = os.path.getsize(path)
         compressed_size = 0
 
@@ -349,13 +345,60 @@ def huff_mtf(input_folder):
         
         
 
-def huff_bwt_mtf():
-    pass
+def huff_bwt_mtf(input_folder):
+    ratios = []
+
+    files = [
+        f for f in os.listdir(input_folder)
+        if f.endswith(".docx")
+    ][:10]
+
+    for filename in files:
+        path = os.path.join(input_folder, filename)
+
+        blocks, indices = bwt_blockwise(path)
+
+        original_size = os.path.getsize(path)
+        compressed_size = 0
+
+        for block, idx in zip(blocks, indices):
+            mtf_data = bwt_mtf.mtf_encode(block)
+            freq = {}
+            for b in mtf_data:
+                freq[b] = freq.get(b, 0) + 1
+
+            root = build_huffman_tree(freq)
+            codes = generate_codes(root)
+
+            comp = compress_data(mtf_data, codes)
+
+            # counting block size
+            compressed_size += (
+                len(freq) * 4 + 
+                4 +              # primary index
+                len(comp)
+            )
+
+        ratio = compressed_size / original_size
+        ratios.append(ratio)
+
+        print(
+            f"{filename}: "
+            f"original={original_size} B, "
+            f"compressed≈{compressed_size} B, "
+            f"ratio≈{ratio:.3f}"
+        )
+
+    if ratios:
+        print("\n=== Compression statistics ===")
+        print(f"Average ratio: {sum(ratios)/len(ratios):.3f}")
+        print(f"Min ratio:     {min(ratios):.3f}")
+        print(f"Max ratio:     {max(ratios):.3f}")
         
     
 
 if __name__ == "__main__":
-    huff_mtf(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Docx files")
+    huff_bwt_mtf(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Docx files")
     # version = 0
     # print("Choose the version of Huffman compresssion (Type the corresponding number on keyboard and press Enter")
     # while version != "1" or "2" or "3" or "4":

@@ -345,11 +345,48 @@ def lzw_bwt_test_folder(input_folder, ext=".mobi", code_size=12):
         print(f"Max ratio:     {max(ratios):.3f}")
 
 
-def lzw_mtf_test_folder():
-    pass
+def lzw_bwt_mtf_test_folder(input_folder, ext=".txt", code_size=12):
+    ratios = []
 
-def lzw_bwt_mtf_test_folder():
-    pass
+    files = [
+        f for f in os.listdir(input_folder)
+        if f.endswith(ext)
+    ][:10]
+
+    for filename in files:
+        path = os.path.join(input_folder, filename)
+
+        blocks, primary_indices = bwt_blockwise(path)
+
+        compressed_size = 0
+        original_size = 0
+
+        for block in blocks:
+            original_size += len(block)
+
+            mtf_block = bwt_mtf.mtf_encode(block)         
+            comp = lzw_compress(mtf_block, code_size)
+
+            compressed_size += len(comp)
+
+        compressed_size += 5
+
+        ratio = compressed_size / original_size
+        ratios.append(ratio)
+        
+        print(
+            f"{filename}: "
+            f"blocks={len(blocks)}, "
+            f"original={original_size} B, "
+            f"compressed={compressed_size} B, "
+            f"ratio={ratio:.3f}"
+        )
+
+    if ratios:
+        print("\n=== LZW + BWT + MTF statistics ===")
+        print(f"Average ratio: {sum(ratios)/len(ratios):.3f}")
+        print(f"Min ratio:     {min(ratios):.3f}")
+        print(f"Max ratio:     {max(ratios):.3f}")
 
 
 if __name__ == "__main__":
@@ -376,8 +413,8 @@ if __name__ == "__main__":
     # lzw_bwt_decompress_file(cmp, out)
 
     
-    folder = r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Docx files"
-    lzw_bwt_test_folder(folder, ext=".docx", code_size=12)
+    folder = r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Mobi files"
+    lzw_bwt_mtf_test_folder(folder, ext=".mobi", code_size=12)
     
     # version = 0
     # print("Choose the version of LZW compresssion (Type the corresponding number on keyboard and press Enter")
