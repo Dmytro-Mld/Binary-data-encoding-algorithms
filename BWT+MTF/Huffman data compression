@@ -152,35 +152,63 @@ def decompress_file(input_path, output_path):
     
 
 
-def huff():
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Exe files\whois64.exe", "rb") as f:
-        data = f.read()
+def huff(input_folder):
+    ratios = []
+
+    files = [
+        f for f in os.listdir(input_folder)
+        if f.endswith(".rtf")
+    ][:10]
+
+    for filename in files:
+        path = os.path.join(input_folder, filename)
+
+        with open(path, "rb") as f:
+            data = f.read()
+
+        if not data:
+            continue
+
         freq = {}
-
         for b in data:
-            if b in freq:
-                freq[b] += 1
-            else:
-                freq[b] = 1
+            freq[b] = freq.get(b, 0) + 1
 
-        freq = dict(sorted(freq.items()))
-        
         root = build_huffman_tree(freq)
         codes = generate_codes(root)
-        
-            
-        for k in list(codes):
-            value, length = codes[k]
-            print(f"byte {k} -> code ({bin(value)}, {length})")
 
         data_comp = compress_data(data, codes)
 
+        original_size = len(data)
+        compressed_size = 256 * 4 + len(data_comp)
+
+        ratio = compressed_size / original_size
+        ratios.append(ratio)
+
+        print(
+            f"{filename}: "
+            f"original={original_size} B, "
+            f"compressed={compressed_size} B, "
+            f"ratio={ratio:.3f}"
+        )
+
+    if ratios:
+        avg = sum(ratios) / len(ratios)
+        min_r = min(ratios)
+        max_r = max(ratios)
+
+        print("\n=== Compression statistics ===")
+        print(f"Average ratio: {avg:.3f}")
+        print(f"Min ratio:     {min_r:.3f}")
+        print(f"Max ratio:     {max_r:.3f}")
         
-    with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\compressed.txt", "wb") as ff:
-        for byte in range(256):
-            count = freq.get(byte, 0).to_bytes(4, "little")
-            ff.write(count)
-        ff.write(data_comp)
+        
+
+        
+    # with open(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\compressed.txt", "wb") as ff:
+    #     for byte in range(256):
+    #         count = freq.get(byte, 0).to_bytes(4, "little")
+    #         ff.write(count)
+    #     ff.write(data_comp)
         
         
     #for decoding use decompress_file() function
@@ -268,8 +296,58 @@ def huff_bwt(input_folder):
     #         original_block = decompress_file(decoded_block, idx)
     #         out.write(original_block)
     
-def huff_mtf():
-    pass
+def huff_mtf(input_folder):
+    ratios = []
+
+    files = [
+        f for f in os.listdir(input_folder)
+        if f.endswith(".docx")
+    ][:10]
+
+    for filename in files:
+        path = os.path.join(input_folder, filename)
+
+        with open(path, "rb") as f:
+            data = f.read()
+
+        if not data:
+            continue
+        
+        mtf_data = bwt_mtf.mtf_encode(data)
+
+        freq = {}
+        for b in mtf_data:
+            freq[b] = freq.get(b, 0) + 1
+
+        root = build_huffman_tree(freq)
+        codes = generate_codes(root)
+
+        data_comp = compress_data(mtf_data, codes)
+
+        original_size = len(data)
+        compressed_size = 256 * 4 + len(data_comp)
+
+        ratio = compressed_size / original_size
+        ratios.append(ratio)
+
+        print(
+            f"{filename}: "
+            f"original={original_size} B, "
+            f"compressed={compressed_size} B, "
+            f"ratio={ratio:.3f}"
+        )
+
+    if ratios:
+        avg = sum(ratios) / len(ratios)
+        min_r = min(ratios)
+        max_r = max(ratios)
+
+        print("\n=== Compression statistics ===")
+        print(f"Average ratio: {avg:.3f}")
+        print(f"Min ratio:     {min_r:.3f}")
+        print(f"Max ratio:     {max_r:.3f}")
+        
+        
 
 def huff_bwt_mtf():
     pass
@@ -277,7 +355,7 @@ def huff_bwt_mtf():
     
 
 if __name__ == "__main__":
-    huff_bwt(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Mobi files")
+    huff_mtf(r"C:\Users\dmmol\OneDrive\Documents\GitHub\Binary-data-encoding-algorithms\Huffman algorithm\Docx files")
     # version = 0
     # print("Choose the version of Huffman compresssion (Type the corresponding number on keyboard and press Enter")
     # while version != "1" or "2" or "3" or "4":

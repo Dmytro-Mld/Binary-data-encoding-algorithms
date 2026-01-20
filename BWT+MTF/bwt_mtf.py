@@ -100,27 +100,35 @@ def bwt_inverse(bwt: bytes, primary_index: int):
     return bytes(res)
 
 #################################################################  MTF
-def mtf(data):
-    alphabet = []
-    output = []
-    
-    for i in data:
-        if i in alphabet:
-            pass
-        else:
-            alphabet.append(i)
-        if len(alphabet) >= 255:
-            break
-        
-    for i in data:
-        index = data.index(i)
-        output.append(index)
-        tmp = i
-        for j in range(index-1):
-            data[index-1] = data[index]
+def mtf_encode(data: bytes) -> bytes:
+    alphabet = list(range(256))
+    out = bytearray()
+
+    for b in data:
+        idx = alphabet.index(b)
+        out.append(idx)
+
+        # move to front
+        alphabet.pop(idx)
+        alphabet.insert(0, b)
+
+    return bytes(out)
+
+def mtf_decode(data: bytes) -> bytes:
+    alphabet = list(range(256))
+    out = bytearray()
+
+    for idx in data:
+        b = alphabet[idx]
+        out.append(b)
+
+        alphabet.pop(idx)
+        alphabet.insert(0, b)
+
+    return bytes(out)
             
                
 
 if __name__ == "__main__":
     data = "abracadabra"
-    mtf()
+    mtf_encode(data)
